@@ -84,15 +84,24 @@ void UAC_GrapplingHook::OnGrapple(float deltaTime, float swingSpeed)
 	
 	// GET ACCELERATION TANGENT VECTOR
 	FVector accelerationTangentVector = (gravity - (gravity | ropeDirection) * ropeDirection) * swingSpeed;
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, accelerationTangentVector.ToCompactString());
+	
 	
 	// FINAL ACCELERATION
 	FVector finalAcceleration = (accelerationCentripetalVector + accelerationTangentVector) * deltaTime;
-	_characterMovementComponent->Velocity += finalAcceleration;
+	if (IsPullingTowardsGrapplePoint)
+	{
+		_characterMovementComponent->Velocity += finalAcceleration / 2;
+	}
+	else
+	{
+		_characterMovementComponent->Velocity += finalAcceleration;
+	}
 	
 	
-	// RECALCULATING
-	if ((_playerPosition - _grapplePoint).Size() > _ropeLength) // Is the new ropeLength greater?
+	
+	
+	// Making sure the Player does not go outside of the Radius of the circle created by the GrapplePoint (GrapplePoint being the center)
+	if ((_playerPosition - _grapplePoint).Size() > _ropeLength) // Is the new ropeLength greater? Therefore outside of the circle
 	{
 		float radialVelocity = (_characterMovementComponent->Velocity | ropeDirection);
 		
@@ -102,6 +111,34 @@ void UAC_GrapplingHook::OnGrapple(float deltaTime, float swingSpeed)
 		_characterMovementComponent->Velocity -= radialVelocity * ropeDirection;
 		GetOwner()->SetActorLocation(constrainedPositionToRope);
 	} 
+}
+
+void UAC_GrapplingHook::OnGrappleHookPull(float deltaTime, float pullStrength)
+{
+		if (IsPullingTowardsGrapplePoint)
+		{
+			
+			FVector ropeDirectionToGrapplePoint = (_grapplePoint - _playerPosition).GetSafeNormal();
+			FVector forceTowardsGrapplePoint = (pullStrength * ropeDirectionToGrapplePoint) * deltaTime;
+			
+			if (ropeDirectionToGrapplePoint.Z >= 0)
+			{
+				_characterMovementComponent->AddImpulse(forceTowardsGrapplePoint);
+			}
+			
+			
+			// Revaluate the player's position and the ropelength.
+			_playerPosition = GetOwner()->GetActorLocation();
+			_ropeLength = (_playerPosition - _grapplePoint).Size();
+		}
+		
+}
+
+void UAC_GrapplingHook::OnGrappleHookPullRelease()
+{
+	// Create the NEW player Position and a new RopeLength
+	_playerPosition = GetOwner()->GetActorLocation();
+	_ropeLength = (_playerPosition - _grapplePoint).Size();
 }
 
 void UAC_GrapplingHook::StopGrapple()

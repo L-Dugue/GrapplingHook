@@ -38,9 +38,12 @@ public:
 	// Custom Methods
 	UFUNCTION(BlueprintCallable) void CastGrapplingHook(); 
 	UFUNCTION(BlueprintCallable) void OnGrapple(float deltaTime, float swingSpeed);
+	UFUNCTION(BlueprintCallable) void OnGrappleHookPull(float deltaTime, float pullStrength);
+	UFUNCTION(BlueprintCallable) void OnGrappleHookPullRelease();
 	UFUNCTION(BlueprintCallable) void StopGrapple();
 	
 	// Custom Fields
 	UPROPERTY(EditAnywhere) float GrapplingHookCastDistance = 250;	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite) bool IsGrappling; 
+	UPROPERTY(BlueprintReadOnly) bool IsGrappling;
+	UPROPERTY(BlueprintReadWrite) bool IsPullingTowardsGrapplePoint;
 };
