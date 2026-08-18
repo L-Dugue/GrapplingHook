@@ -28,6 +28,8 @@ private:
 	FVector _grapplePoint;
 	float _ropeLength;
 	
+	const FVector downVector = FVector(0, 0, -1);
+	
 	UCharacterMovementComponent* _characterMovementComponent;
 
 public:

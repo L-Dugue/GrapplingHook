@@ -85,12 +85,15 @@ void UAC_GrapplingHook::OnGrapple(float deltaTime, float swingSpeed)
 	// GET ACCELERATION TANGENT VECTOR
 	FVector accelerationTangentVector = (gravity - (gravity | ropeDirection) * ropeDirection) * swingSpeed;
 	
+	// Get angle 
+	float theta = acos(ropeDirection | downVector);
 	
 	// FINAL ACCELERATION
 	FVector finalAcceleration = (accelerationCentripetalVector + accelerationTangentVector) * deltaTime;
 	if (IsPullingTowardsGrapplePoint)
 	{
-		_characterMovementComponent->Velocity += finalAcceleration / 2;
+		_characterMovementComponent->Velocity += finalAcceleration / (2 / theta);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Theta: %.2f"), theta));
 	}
 	else
 	{
